@@ -4,13 +4,21 @@ import json
 
 pycrypto=Tk()
 pycrypto.title('My Crypto Portfolio')
+pycrypto.iconbitmap('bitcoin.ico')
 
+
+def font_color(amount):
+    if amount>0:
+        return "green"
+    else:
+        return "red"
+    
 def my_portfolio():
     api_request=requests.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?start=1&limit=300&convert=USD&CMC_PRO_API_KEY=430d6f4e-cfe6-416f-8eef-802fc049bf2d')
     #to convert it into a parseable format
     api_json=json.loads(api_request.content)
     # print(api_json)
-    print("----------------")
+   
     #coins I already have
     coins = [
     {
@@ -37,6 +45,7 @@ def my_portfolio():
     
     total_pl = 0 #total profit/loss
     coin_row=1 #row 0 is for headings
+    total_current_value=0
     
     for i in range(0, 300):
         for coin in coins:
@@ -46,7 +55,8 @@ def my_portfolio():
                 pl_percoin = api_json["data"][i]["quote"]["USD"]["price"] - coin["price_per_coin"]
                 total_pl_coin = pl_percoin * coin["amount_owned"]
             
-                total_pl = total_pl + total_pl_coin
+                total_pl += total_pl_coin
+                total_current_value += current_value
 
                 # print(api_json["data"][i]["name"] + " - " + api_json["data"][i]["symbol"])
                 # print("Price - ${0:.2f}".format(api_json["data"][i]["quote"]["USD"]["price"]))
@@ -55,57 +65,67 @@ def my_portfolio():
                 # print("Current Value:", "${0:.2f}".format(current_value))
                 # print("P/L Per Coin:", "${0:.2f}".format(pl_percoin))
                 # print("Total P/L With Coin:", "${0:.2f}".format(total_pl_coin))
-                # print("----------------")
+
                 
                 #label data
-                name=Label(pycrypto,text=api_json["data"][i]["symbol"],bg='grey',fg='black')
-                name.grid(row=coin_row,column=0,sticky=N)
+                name=Label(pycrypto,text=api_json["data"][i]["symbol"],bg='#F3F4F6',fg='black',font='Lato 12',padx='2',pady='2',borderwidth='1',relief='groove')
+                name.grid(row=coin_row,column=0,sticky=N+S+E+W)
 
-                price=Label(pycrypto,text=api_json["data"][i]["quote"]["USD"]["price"],bg='white',fg='black')
-                price.grid(row=coin_row,column=1,sticky=N)
+                price=Label(pycrypto,text=api_json["data"][i]["quote"]["USD"]["price"],bg='white',fg='black',font='Lato 12',padx='2',pady='2',borderwidth='1',relief='groove')
+                price.grid(row=coin_row,column=1,sticky=N+S+E+W)
 
-                coin_no=Label(pycrypto,text=coin["amount_owned"],bg='grey',fg='black')
-                coin_no.grid(row=coin_row,column=2,sticky=N)
+                coin_no=Label(pycrypto,text=coin["amount_owned"],bg='#F3F4F6',fg='black',font='Lato 12',padx='2',pady='2',borderwidth='1',relief='groove')
+                coin_no.grid(row=coin_row,column=2,sticky=N+S+E+W)
 
-                amount_paid=Label(pycrypto,text="${0:.2f}".format(total_paid),bg='white',fg='black')
-                amount_paid.grid(row=coin_row,column=3,sticky=N)
+                amount_paid=Label(pycrypto,text="${0:.2f}".format(total_paid),bg='white',fg='black',font='Lato 12',padx='2',pady='2',borderwidth='1',relief='groove')
+                amount_paid.grid(row=coin_row,column=3,sticky=N+S+E+W)
 
-                current_val=Label(pycrypto,text="${0:.2f}".format(current_value),bg='grey',fg='black')
-                current_val.grid(row=coin_row,column=4,sticky=N)
+                current_val=Label(pycrypto,text="${0:.2f}".format(current_value),bg='#F3F4F6',fg=font_color(float(current_value)),font='Lato 12',padx='2',pady='2',borderwidth='1',relief='groove')
+                current_val.grid(row=coin_row,column=4,sticky=N+S+E+W)
 
-                pl_coin=Label(pycrypto,text="${0:.2f}".format(pl_percoin),bg='white',fg='black')
-                pl_coin.grid(row=coin_row,column=5,sticky=N)
+                pl_coin=Label(pycrypto,text="${0:.2f}".format(pl_percoin),bg='white',fg=font_color(float(pl_percoin)),font='Lato 12',padx='2',pady='2',borderwidth='1',relief='groove')
+                pl_coin.grid(row=coin_row,column=5,sticky=N+S+E+W)
 
                 #ltotal_pl 'l' prefix is added as there is another float variable ltotal that is required for calculations
-                ltotal_pl=Label(pycrypto,text="${0:.2f}".format(total_pl_coin),bg='grey',fg='black')
-                ltotal_pl.grid(row=coin_row,column=6,sticky=N)
+                ltotal_pl=Label(pycrypto,text="${0:.2f}".format(total_pl_coin),bg='#F3F4F6',fg=font_color(float(total_pl_coin)),font='Lato 12',padx='2',pady='2',borderwidth='1',relief='groove')
+                ltotal_pl.grid(row=coin_row,column=6,sticky=N+S+E+W)
                 
                 coin_row += 1
                 
     # print("Total P/L For Portfolio:", "${0:.2f}".format(total_pl))
+    #coin row already incremented so total profit loss will be printed in 5th row only,cheers!
+    total_pl=Label(pycrypto,text="${0:.2f}".format(total_pl),bg='white',fg=font_color(float(total_pl)),font='Lato 12',padx='2',pady='2',borderwidth='1',relief='groove')
+    total_pl.grid(row=coin_row,column=6,sticky=N+S+E+W)
+    
+    total_curr_val=Label(pycrypto,text="${0:.2f}".format(total_current_value),bg='white',fg=font_color(float(total_current_value)),font='Lato 12',padx='2',pady='2',borderwidth='1',relief='groove')
+    total_curr_val.grid(row=coin_row,column=4,sticky=N+S+E+W)
+    
+    api_json='' #clearing the data before refreshing
+    update=Button(pycrypto,text='Update',bg='#142E54',fg='white',command=my_portfolio,font='Lato 12',padx='2',pady='2',borderwidth='2',relief='groove')
+    update.grid(row=coin_row+1,column=6,sticky=N+S+E+W)
 
 
 #Label headings
-name=Label(pycrypto,text='Coin Name',bg='grey',fg='black')
-name.grid(row=0,column=0,sticky=N)
+name=Label(pycrypto,text='Coin Name',bg='#142E54',fg='white',font='Lato 15 bold',padx='5',pady='5',borderwidth='2',relief='groove')
+name.grid(row=0,column=0,sticky=N+S+E+W)
 
-price=Label(pycrypto,text='Price',bg='white',fg='black')
-price.grid(row=0,column=1,sticky=N)
+price=Label(pycrypto,text='Price',bg='#142E54',fg='white',font='Lato 15 bold',padx='5',pady='5',borderwidth='2',relief='groove')
+price.grid(row=0,column=1,sticky=N+S+E+W)
 
-coin_no=Label(pycrypto,text='Coins Owned',bg='grey',fg='black')
-coin_no.grid(row=0,column=2,sticky=N)
+coin_no=Label(pycrypto,text='Coins Owned',bg='#142E54',fg='white',font='Lato 15 bold',padx='5',pady='5',borderwidth='2',relief='groove')
+coin_no.grid(row=0,column=2,sticky=N+S+E+W)
 
-amount_paid=Label(pycrypto,text='Total Amount Paid',bg='white',fg='black')
-amount_paid.grid(row=0,column=3,sticky=N)
+amount_paid=Label(pycrypto,text='Total Amount Paid',bg='#142E54',fg='white',font='Lato 15 bold',padx='5',pady='5',borderwidth='2',relief='groove')
+amount_paid.grid(row=0,column=3,sticky=N+S+E+W)
 
-current_vals=Label(pycrypto,text='Current Value',bg='grey',fg='black')
-current_vals.grid(row=0,column=4,sticky=N)
+current_vals=Label(pycrypto,text='Current Value',bg='#142E54',fg='white',font='Lato 15 bold',padx='5',pady='5',borderwidth='2',relief='groove')
+current_vals.grid(row=0,column=4,sticky=N+S+E+W)
 
-pl_coin=Label(pycrypto,text='Profit/Loss per coin',bg='white',fg='black')
-pl_coin.grid(row=0,column=5,sticky=N)
+pl_coin=Label(pycrypto,text='Profit/Loss per coin',bg='#142E54',fg='white',font='Lato 15 bold',padx='5',pady='5',borderwidth='2',relief='groove')
+pl_coin.grid(row=0,column=5,sticky=N+S+E+W)
 
-total_pl=Label(pycrypto,text='Total Profit/Loss with Coin',bg='grey',fg='black')
-total_pl.grid(row=0,column=6,sticky=N)
+total_pl=Label(pycrypto,text='Total Profit/Loss with Coin',bg='#142E54',fg='white',font='Lato 15 bold',padx='5',pady='5',borderwidth='2',relief='groove')
+total_pl.grid(row=0,column=6,sticky=N+S+E+W)
 
 my_portfolio()
 pycrypto.mainloop()
