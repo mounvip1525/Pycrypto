@@ -1,6 +1,23 @@
 from tkinter import *
 import requests 
 import json
+import sqlite3
+
+con=sqlite3.connect('coins.db')
+curr=con.cursor()
+curr.execute("CREATE TABLE IF NOT EXISTS coin(id INTEGER PRIMARY KEY,symbol TEXT, amount INTEGER,price REAL)")
+con.commit()
+
+#Once executed, should be commented to prevent insertions again(of course there will be integrity error refering to the primary key)
+# curr.execute("INSERT INTO coin VALUES(1,'BTC',15,180)")
+# con.commit()
+# curr.execute("INSERT INTO coin VALUES(2,'ETH',5,18)")
+# con.commit()
+# curr.execute("INSERT INTO coin VALUES(3,'NEO',150,1300)")
+# con.commit()
+# curr.execute("INSERT INTO coin VALUES(4,'XMR',3,30)")
+# con.commit()
+
 
 pycrypto=Tk()
 pycrypto.title('My Crypto Portfolio')
@@ -18,30 +35,34 @@ def my_portfolio():
     #to convert it into a parseable format
     api_json=json.loads(api_request.content)
     # print(api_json)
+    
+    curr.execute('SELECT * FROM coin')
+    coins=curr.fetchall()
+    print(coins)
    
     #coins I already have
-    coins = [
-    {
-        "symbol":"BTC",
-        "amount_owned": 15,
-        "price_per_coin": 180
-    }, 
-    {
-        "symbol":"ETH",
-        "amount_owned":25,
-        "price_per_coin": 300
-    },
-    {
-        "symbol":"ALGO",
-        "amount_owned":5,
-        "price_per_coin": 3000
-    },
-    {
-        "symbol":"SOL",
-        "amount_owned":95,
-        "price_per_coin": 10
-    }
-    ]
+    # coins = [
+    # {
+    #     "symbol":"BTC",
+    #     "amount_owned": 15,
+    #     "price_per_coin": 180
+    # }, 
+    # {
+    #     "symbol":"ETH",
+    #     "amount_owned":25,
+    #     "price_per_coin": 300
+    # },
+    # {
+    #     "symbol":"ALGO",
+    #     "amount_owned":5,
+    #     "price_per_coin": 3000
+    # },
+    # {
+    #     "symbol":"SOL",
+    #     "amount_owned":95,
+    #     "price_per_coin": 10
+    # }
+    # ]
     
     total_pl = 0 #total profit/loss
     coin_row=1 #row 0 is for headings
@@ -49,11 +70,11 @@ def my_portfolio():
     
     for i in range(0, 300):
         for coin in coins:
-            if api_json["data"][i]["symbol"] == coin["symbol"]:
-                total_paid = coin["amount_owned"] * coin["price_per_coin"]
-                current_value = coin["amount_owned"] * api_json["data"][i]["quote"]["USD"]["price"]
-                pl_percoin = api_json["data"][i]["quote"]["USD"]["price"] - coin["price_per_coin"]
-                total_pl_coin = pl_percoin * coin["amount_owned"]
+            if api_json["data"][i]["symbol"] == coin[1]:
+                total_paid = coin[2] * coin[3]
+                current_value = coin[2] * api_json["data"][i]["quote"]["USD"]["price"]
+                pl_percoin = api_json["data"][i]["quote"]["USD"]["price"] - coin[3]
+                total_pl_coin = pl_percoin * coin[2]
             
                 total_pl += total_pl_coin
                 total_current_value += current_value
@@ -74,7 +95,7 @@ def my_portfolio():
                 price=Label(pycrypto,text=api_json["data"][i]["quote"]["USD"]["price"],bg='white',fg='black',font='Lato 12',padx='2',pady='2',borderwidth='1',relief='groove')
                 price.grid(row=coin_row,column=1,sticky=N+S+E+W)
 
-                coin_no=Label(pycrypto,text=coin["amount_owned"],bg='#F3F4F6',fg='black',font='Lato 12',padx='2',pady='2',borderwidth='1',relief='groove')
+                coin_no=Label(pycrypto,text=coin[2],bg='#F3F4F6',fg='black',font='Lato 12',padx='2',pady='2',borderwidth='1',relief='groove')
                 coin_no.grid(row=coin_row,column=2,sticky=N+S+E+W)
 
                 amount_paid=Label(pycrypto,text="${0:.2f}".format(total_paid),bg='white',fg='black',font='Lato 12',padx='2',pady='2',borderwidth='1',relief='groove')
@@ -129,3 +150,6 @@ total_pl.grid(row=0,column=6,sticky=N+S+E+W)
 
 my_portfolio()
 pycrypto.mainloop()
+
+curr.close()
+con.close()
