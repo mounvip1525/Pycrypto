@@ -24,12 +24,30 @@ pycrypto=Tk()
 pycrypto.title('My Crypto Portfolio')
 pycrypto.iconbitmap('bitcoin.ico')
 
+    
 def refresh():
     for cell in pycrypto.winfo_children():
         cell.destroy()
         
     my_portfolio()
     app_headers()
+    app_nav()
+    
+def app_nav():
+    def clear_all():
+        curr.execute('DELETE FROM coin')
+        con.commit()
+        messagebox.showinfo('My Portfolio','All values have been deleted successfully')
+        refresh()
+    def close():
+        pycrypto.destroy()
+        
+    menu=Menu(pycrypto)
+    file=Menu(menu)
+    file.add_command(label='Clear All',command=clear_all)
+    file.add_command(label='Close',command=close)
+    menu.add_cascade(label='File',menu=file)
+    pycrypto.config(menu=menu)
     
 def my_portfolio():
     api_request=requests.get('https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?start=1&limit=300&convert=USD&CMC_PRO_API_KEY=430d6f4e-cfe6-416f-8eef-802fc049bf2d')
@@ -144,40 +162,40 @@ def my_portfolio():
                 coin_row += 1
                 
     #inserting values
-    symbol_txt=Entry(pycrypto,borderwidth='2',relief='groove')
+    symbol_txt=Entry(pycrypto,borderwidth=4,relief='groove')
     symbol_txt.grid(row=coin_row+1,column=1)
     
-    amount_txt=Entry(pycrypto,borderwidth='2',relief='groove')
+    amount_txt=Entry(pycrypto,borderwidth=4,relief='groove')
     amount_txt.grid(row=coin_row+1,column=2)
     
-    price_txt=Entry(pycrypto,borderwidth='2',relief='groove')
+    price_txt=Entry(pycrypto,borderwidth=4,relief='groove')
     price_txt.grid(row=coin_row+1,column=3)
     
     add_coin=Button(pycrypto,text='Add + ',bg='#142E54',fg='white',command=insert_coin,font='Lato 12',padx='2',pady='2',borderwidth='2',relief='groove')
     add_coin.grid(row=coin_row+1,column=4,sticky=N+S+E+W)
     
     #update values
-    id_update=Entry(pycrypto,borderwidth='2',relief='groove')
+    id_update=Entry(pycrypto,borderwidth=4,relief='groove')
     id_update.grid(row=coin_row+2,column=0)
     
-    symbol_update=Entry(pycrypto,borderwidth='2',relief='groove')
+    symbol_update=Entry(pycrypto,borderwidth=4,relief='groove')
     symbol_update.grid(row=coin_row+2,column=1)
     
-    amount_update=Entry(pycrypto,borderwidth='2',relief='groove')
+    amount_update=Entry(pycrypto,borderwidth=4,relief='groove')
     amount_update.grid(row=coin_row+2,column=2)
     
-    price_update=Entry(pycrypto,borderwidth='2',relief='groove')
+    price_update=Entry(pycrypto,borderwidth=4,relief='groove')
     price_update.grid(row=coin_row+2,column=3)
     
     update_coin_txt=Button(pycrypto,text='Update',bg='#142E54',fg='white',command=update_coin,font='Lato 12',padx='2',pady='2',borderwidth='2',relief='groove')
     update_coin_txt.grid(row=coin_row+2,column=4,sticky=N+S+E+W)
     
     #delete
-    id_delete=Entry(pycrypto,borderwidth='2',relief='groove')
+    id_delete=Entry(pycrypto,borderwidth=4,relief='groove')
     id_delete.grid(row=coin_row+3,column=0)
     
     delete_coin_txt=Button(pycrypto,text='Delete',bg='#142E54',fg='white',command=delete_coin,font='Lato 12',padx='2',pady='2',borderwidth='2',relief='groove')
-    delete_coin_txt.grid(row=coin_row+3,column=1,sticky=N+S+E+W)
+    delete_coin_txt.grid(row=coin_row+3,column=4,sticky=N+S+E+W)
     
                 
     # print("Total P/L For Portfolio:", "${0:.2f}".format(total_pl))
@@ -223,6 +241,7 @@ def app_headers():
     total_pl=Label(pycrypto,text='Total Profit/Loss with Coin',bg='#142E54',fg='white',font='Lato 12 bold',padx='5',pady='5',borderwidth='2',relief='groove')
     total_pl.grid(row=0,column=7,sticky=N+S+E+W)
 
+app_nav()
 app_headers()
 my_portfolio()
 pycrypto.mainloop()
